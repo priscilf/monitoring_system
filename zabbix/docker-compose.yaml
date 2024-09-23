@@ -1,0 +1,58 @@
+version: '3.7'
+  
+services:
+  postgres:
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    volumes:
+      - post_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=root
+    networks:
+      my_net:
+        ipv4_address: 172.18.10.10
+
+  zabbix-server:
+    image: zabbix/zabbix-server-pgsql
+    environment:
+      - DB_SERVER_HOST=172.18.10.10
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=root
+    networks:
+      my_net:
+        ipv4_address: 172.18.10.11
+
+  zabbix-web:
+    image: zabbix/zabbix-web-nginx-pgsql
+    ports:
+      - 8080:8080
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=root
+      - DB_SERVER_HOST=172.18.10.10
+      - ZBX_SERVER_HOST=172.18.10.11
+      - PHP_TZ=Europe/Moscow
+    networks:
+      my_net:
+        ipv4_address: 172.18.10.12
+
+  zabbix-agent:
+    image: zabbix/zabbix-agent2
+    environment:
+      - DB_SERVER_HOST=172.18.10.10
+      - ZBX_SERVER_HOST=172.18.10.11
+    networks:
+      my_net:
+        ipv4_address: 172.18.10.13
+
+networks:
+  my_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.18.10.0/24
+
+volumes:
+  post_data:
+
