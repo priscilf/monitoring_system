@@ -15,7 +15,7 @@ services:
   zabbix-server:
     image: zabbix/zabbix-server-pgsql
     environment:
-      - DB_SERVER_HOST=172.18.10.10
+      - DB_SERVER_HOST=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=root
     networks:
@@ -28,8 +28,8 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=root
-      - DB_SERVER_HOST=172.18.10.10
-      - ZBX_SERVER_HOST=172.18.10.11
+      - DB_SERVER_HOST=postgres
+      - ZBX_SERVER_HOST=zabbix-server
       - PHP_TZ=Europe/Moscow
     networks:
       - my_net
@@ -37,8 +37,8 @@ services:
   zabbix-agent:
     image: zabbix/zabbix-agent2
     environment:
-      - DB_SERVER_HOST=172.18.10.10
-      - ZBX_SERVER_HOST=172.18.10.11
+      - DB_SERVER_HOST=postgres
+      - ZBX_SERVER_HOST=zabbix-server
     networks:
       - my_net
       
