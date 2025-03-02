@@ -10,8 +10,7 @@ services:
     environment:
       - POSTGRES_PASSWORD=root
     networks:
-      my_net:
-        ipv4_address: 172.18.10.10
+      - my_net
 
   zabbix-server:
     image: zabbix/zabbix-server-pgsql
@@ -20,8 +19,7 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=root
     networks:
-      my_net:
-        ipv4_address: 172.18.10.11
+      - my_net
 
   zabbix-web:
     image: zabbix/zabbix-web-nginx-pgsql
@@ -34,8 +32,7 @@ services:
       - ZBX_SERVER_HOST=172.18.10.11
       - PHP_TZ=Europe/Moscow
     networks:
-      my_net:
-        ipv4_address: 172.18.10.12
+      - my_net
 
   zabbix-agent:
     image: zabbix/zabbix-agent2
@@ -43,16 +40,43 @@ services:
       - DB_SERVER_HOST=172.18.10.10
       - ZBX_SERVER_HOST=172.18.10.11
     networks:
-      my_net:
-        ipv4_address: 172.18.10.13
+      - my_net
+      
+
+  agent:
+    image: portainer/agent:2.19.5
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/docker/volumes:/var/lib/docker/volumes
+    networks:
+      - my_net
+    deploy:
+      mode: global
+      placement:
+        constraints: [node.platform.os == linux]
+
+  portainer:
+    image: portainer/portainer-ce:2.19.5
+    command: -H tcp://tasks.agent:9001 --tlsskipverify
+    ports:
+      - "9443:9443"
+      - "9000:9000"
+      - "8000:8000"
+    volumes:
+      - portainer_data:/data
+    networks:
+      - my_net
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
+
 
 networks:
   my_net:
     driver: bridge
-    ipam:
-      config:
-        - subnet: 172.18.10.0/24
 
 volumes:
   post_data:
-
+  portainer_data:
